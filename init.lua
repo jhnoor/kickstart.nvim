@@ -161,6 +161,11 @@ vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+-- Formatting keymap
+vim.keymap.set({"n", "v"}, "<leader>f", function()
+  require("conform").format({async = true, lsp_fallback = true})
+end, {desc = "Format file or range"})
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
@@ -225,6 +230,18 @@ vim.opt.rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  {
+    'stevearc/conform.nvim',
+    config = function()
+      require('conform').setup {
+        formatters_by_ft = {
+          html = { 'prettier' },
+          css = { 'prettier' },
+          js = { 'prettier' },
+        },
+      }
+    end,
+  },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
