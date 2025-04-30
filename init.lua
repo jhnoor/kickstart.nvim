@@ -231,6 +231,23 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- optional, for file icons
+      "MunifTanjim/nui.nvim",
+    },
+    config = function()
+      require("neo-tree").setup({
+        filesystem = {
+          follow_current_file = { enabled = true }, -- optional: reveal file in tree
+        },
+      })
+      vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<CR>", { desc = "Toggle Neo-tree" })
+    end,
+  },
+  {
     "folke/edgy.nvim",
     event = "VeryLazy",
     init = function()
@@ -270,7 +287,23 @@ require('lazy').setup({
           size = { height = 0.5 }
         }
       }
-    }
+    },
+    config = function(_, opts)
+      require("edgy").setup(opts)
+
+      -- Load neo-tree (if lazy-loaded) and show layout
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+          -- Force lazy-load Neo-tree if necessary
+          require("lazy").load({ plugins = { "neo-tree.nvim" } })
+
+          vim.defer_fn(function()
+            vim.cmd("Neotree show")
+            vim.cmd("ToggleTerm direction=horizontal")
+          end, 100)
+        end,
+      })
+    end,
   },
   {
     'stevearc/conform.nvim',
