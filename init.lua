@@ -162,9 +162,9 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Formatting keymap
-vim.keymap.set({"n", "v"}, "<leader>f", function()
-  require("conform").format({async = true, lsp_fallback = true})
-end, {desc = "Format file or range"})
+vim.keymap.set({ "n", "v" }, "<leader>f", function()
+  require("conform").format({ async = true, lsp_fallback = true })
+end, { desc = "Format file or range" })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -248,6 +248,14 @@ require('lazy').setup({
     end,
   },
   {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    config = function()
+      require("toggleterm").setup()
+      vim.keymap.set("n", "<C-j>", "<cmd>ToggleTerm<CR>", { desc = "Toggle terminal" })
+    end,
+  },
+  {
     "folke/edgy.nvim",
     event = "VeryLazy",
     init = function()
@@ -274,7 +282,16 @@ require('lazy').setup({
           end,
         },
         "Trouble",
-        { ft = "qf", title = "QuickFix" },
+        { ft = "qf",            title = "QuickFix" },
+        {
+          ft = "help",
+          size = { height = 20 },
+          -- only show help buffers
+          filter = function(buf)
+            return vim.bo[buf].buftype == "help"
+          end,
+        },
+        { ft = "spectre_panel", size = { height = 0.4 } },
       },
       left = {
         -- Neo-tree filesystem always takes half the screen height
@@ -284,26 +301,42 @@ require('lazy').setup({
           filter = function(buf)
             return vim.b[buf].neo_tree_source == "filesystem"
           end,
-          size = { height = 0.5 }
-        }
-      }
+          size = { height = 0.5 },
+        },
+        {
+          title = "Neo-Tree Git",
+          ft = "neo-tree",
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == "git_status"
+          end,
+          pinned = true,
+          collapsed = true, -- show window as closed/collapsed on start
+          open = "Neotree position=right git_status",
+        },
+        {
+          title = "Neo-Tree Buffers",
+          ft = "neo-tree",
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == "buffers"
+          end,
+          pinned = true,
+          collapsed = true, -- show window as closed/collapsed on start
+          open = "Neotree position=top buffers",
+        },
+        {
+          title = function()
+            local buf_name = vim.api.nvim_buf_get_name(0) or "[No Name]"
+            return vim.fn.fnamemodify(buf_name, ":t")
+          end,
+          ft = "Outline",
+          pinned = true,
+          open = "SymbolsOutlineOpen",
+
+        },
+        -- any other neo-tree windows
+        "neo-tree",
+      },
     },
-    config = function(_, opts)
-      require("edgy").setup(opts)
-
-      -- Load neo-tree (if lazy-loaded) and show layout
-      vim.api.nvim_create_autocmd("VimEnter", {
-        callback = function()
-          -- Force lazy-load Neo-tree if necessary
-          require("lazy").load({ plugins = { "neo-tree.nvim" } })
-
-          vim.defer_fn(function()
-            vim.cmd("Neotree show")
-            vim.cmd("ToggleTerm direction=horizontal")
-          end, 100)
-        end,
-      })
-    end,
   },
   {
     'stevearc/conform.nvim',
@@ -360,7 +393,7 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  { -- Useful plugin to show you pending keybinds.
+  {                     -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     config = function() -- This is the function that runs, AFTER loading
@@ -408,7 +441,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -501,7 +534,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
       -- used for completion, annotations and signatures of Neovim apis
